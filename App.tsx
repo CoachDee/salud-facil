@@ -215,17 +215,25 @@ const App: React.FC = () => {
         setAnalysisResult(null);
 
         try {
+            if (!process.env.API_KEY) {
+                throw new Error("API key is not configured.");
+            }
             const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             const readingsForPrompt = bloodPressureReadings
                 .slice(-20) // Use last 20 readings for analysis
                 .map(r => `${new Date(r.date).toLocaleDateString(language)}: ${r.systolic}/${r.diastolic} mmHg, ${r.pulse} bpm. Notes: ${r.notes || 'N/A'}`)
                 .join('\n');
             
-            const prompt = `Analyze the following blood pressure readings. The user's language is ${language}. Identify trends, patterns, or notable points. Do not provide medical advice. Present the analysis as a bulleted list. The readings are:\n${readingsForPrompt}`;
+            const systemInstruction = `You are a helpful health assistant. Your role is to analyze blood pressure data provided by a user and present observations in a clear, easy-to-understand, and neutral way. You MUST NOT provide medical advice, diagnoses, or treatment recommendations. Your analysis should focus only on identifying patterns, trends, and notable points within the data provided. Your entire response must be in the language: ${language}. Use markdown for formatting, like bullet points.`;
             
+            const contents = `Please analyze these blood pressure readings:\n${readingsForPrompt}`;
+
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash-preview-04-17',
-                contents: prompt,
+                contents: contents,
+                config: {
+                    systemInstruction: systemInstruction,
+                }
             });
 
             setAnalysisResult(response.text);
