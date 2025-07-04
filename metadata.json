@@ -1,0 +1,6 @@
+{
+  "name": "Salud Fácil (Easy Health)",
+  "description": "A personal assistant app to manage medications and track blood pressure readings. The app is multi-lingual and stores all data locally on the user's device for privacy.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
